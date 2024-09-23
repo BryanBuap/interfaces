@@ -140,3 +140,52 @@ send_button = ttk.Button(tab2, text="Enviar", command=send_command)
 send_button.grid(column=0, row=3, columnspan=2, pady=5)
 
 root.mainloop()
+
+
+codigo en arduino
+#include <Arduino.h>
+
+// Define los pines de los LEDs
+const int ledPin1 = 13;  // Pin digital para el LED 1
+const int ledPin2 = 12;  // Pin digital para el LED 2
+
+const int potentiometerPin = A0; // Pin para la resistencia variable (potenciómetro)
+
+void setup() {
+    Serial.begin(9600);
+    pinMode(ledPin1, OUTPUT);  // Configura el pin D13 como salida
+    pinMode(ledPin2, OUTPUT);  // Configura el pin D12 como salida
+}
+
+void loop() {
+    if (Serial.available()) {
+        String command = Serial.readStringUntil('\n');
+        
+        if (command == "LED1_ON") {
+            digitalWrite(ledPin1, HIGH);  // Enciende el LED 1
+        } else if (command == "LED1_OFF") {
+            digitalWrite(ledPin1, LOW);   // Apaga el LED 1
+        } else if (command == "LED2_ON") {
+            digitalWrite(ledPin2, HIGH);  // Enciende el LED 2
+        } else if (command == "LED2_OFF") {
+            digitalWrite(ledPin2, LOW);   // Apaga el LED 2
+        } else if (command.startsWith("OPTION1:")) {
+            String text = command.substring(8);
+            int number = text.toInt();
+            Serial.println(number + 1);  // Incrementa el número y responde
+        } else if (command == "OPTION2") {
+            // Leer el valor del potenciómetro (resistencia variable)
+            int sensorValue = analogRead(potentiometerPin);
+
+            Serial.println(sensorValue);  // Envía el valor del sensor al programa Python
+        } else if (command.startsWith("OPTION3:")) {
+            int pwmValue = command.substring(8).toInt();
+            if (pwmValue >= 0 && pwmValue <= 255) {
+                analogWrite(ledPin1, pwmValue); 
+            } else {
+                Serial.println("Valor de PWM fuera de rango. Debe estar entre 0 y 255.");
+            }
+        }
+    }  
+}
+
