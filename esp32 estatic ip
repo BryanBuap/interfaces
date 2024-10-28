@@ -1,0 +1,262 @@
+ip
+#include <WiFi.h>
+
+// Replace with your network credentials
+const char* ssid = "Totalplay-90A1";  // Enter SSID here
+const char* password = "90A1EB45YSDUBBV6";  //Enter Password here
+
+void setup() {
+  Serial.begin(115200);
+  
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  
+  Serial.println("");
+  Serial.println("Connected..!");
+ 
+  Serial.print("Current ESP32 IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.print("Gateway (router) IP: ");
+  Serial.println(WiFi.gatewayIP());
+  Serial.print("Subnet Mask: " );
+  Serial.println(WiFi.subnetMask());
+  Serial.print("Primary DNS: ");
+  Serial.println(WiFi.dnsIP(0));
+  Serial.print("Secondary DNS: ");
+  Serial.println(WiFi.dnsIP(1));
+}
+
+void loop() {
+}
+
+
+ip static
+#include <WiFi.h>
+
+// Replace with your network credentials
+const char* ssid = "Totalplay-90A1";
+const char* password = "90A1EB45YSDUBBV6";
+
+// Static IP configuration
+IPAddress staticIP(1921,68,100,95); // ESP32 static IP
+IPAddress gateway(192,168,100,1);    // IP Address of your network gateway (router)
+IPAddress subnet(255,255,255,0);   // Subnet mask
+IPAddress primaryDNS(192,168,100,1); // Primary DNS (optional)
+IPAddress secondaryDNS(148, 228, 8, 201);   // Secondary DNS (optional)
+
+void setup() {
+  Serial.begin(115200);
+
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+
+  // Configuring static IP
+  if(!WiFi.config(staticIP, gateway, subnet, primaryDNS, secondaryDNS)) {
+    Serial.println("Failed to configure Static IP");
+  } else {
+    Serial.println("Static IP configured!");
+  }
+  
+  Serial.print("ESP32 IP Address: ");
+  Serial.println(WiFi.localIP());  // Print the ESP32 IP address to Serial Monitor
+}
+
+void loop() {
+  // Nothing to do here
+}
+
+
+modificador del servidor esp32
+#include <WiFi.h>
+
+const char* ssid = "Totalplay-90A1";
+const char* password = "90A1EB45YSDUBBV6";
+int PWM_VAL = 255;
+int PWM_OFF = 0;
+int LED1 = 16;
+int LED2 = 17;
+int frecuencia = 5000;
+int canalPWM = 12;
+int canalPWM2 = 9;
+int resolucionPWM = 8;
+int cobra = 0;
+int xd = 0;
+int pwmPin = 34;
+
+WiFiServer server(80);
+
+void setup() {
+    Serial.begin(115200);
+    
+    ledcSetup(canalPWM, frecuencia, resolucionPWM);
+    ledcAttachPin(LED1, canalPWM);
+
+    ledcSetup(canalPWM2, frecuencia, resolucionPWM);
+    ledcAttachPin(LED2, canalPWM2);
+
+    delay(10);
+
+    Serial.println();
+    Serial.print("Connecting to ");
+    Serial.println(ssid);
+
+    WiFi.begin(ssid, password);
+
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+
+    Serial.println("\nWiFi connected.");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+    
+    server.begin();
+}
+
+void loop() {
+    WiFiClient client = server.available();
+
+    if (client) {                             
+        Serial.println("New Client.");          
+        String currentLine = "";                
+
+        while (client.connected()) {            
+            if (client.available()) {             
+                char c = client.read();             
+                Serial.write(c);                    
+
+                if (c == '\n') {                    
+                    if (currentLine.length() == 0) {  
+                        client.println("HTTP/1.1 200 OK");
+                        client.println("Content-type:text/html");
+                        client.println();
+
+                        client.println("<!DOCTYPE html>");
+                        client.println("<html>");
+                        client.println("<head>");
+                        client.println("<style>");
+                        client.println("  body { background-image: url('https://cdn.pixabay.com/animation/2023/01/24/23/10/23-10-04-56_512.gif'); background-size: cover; color: #ffffff; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px; }");
+                        client.println("  h2 { color: #ffffff; }");
+                        client.println("  .btn-container { display: flex; gap: 10px; margin-bottom: 20px; }");
+                        client.println("  .btn { padding: 10px 20px; font-size: 16px; border: none; color: white; cursor: pointer; border-radius: 5px; }");
+                        client.println("  .btn-on { background-color: #4CAF50; }");
+                        client.println("  .btn-off { background-color: #f44336; }");
+                        client.println("  #pwmInput { padding: 8px; font-size: 16px; width: 80px; text-align: center; margin-right: 10px; }");
+                        client.println("  #applyBtn { padding: 10px 20px; font-size: 16px; background-color: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer; }");
+                        client.println("  .table-container { position: fixed; bottom: 20px; right: 20px; width: 300px; }");
+                        client.println("  .pwm-value { font-size: 18px; margin-top: 20px; }");
+                        client.println("  .logo { position: fixed; top: 20px; left: 20px; width: 200px; height: auto; }");
+                        client.println("</style>");
+                        client.println("</head>");
+                        client.println("<body>");
+
+                        client.println("<img src='https://www.talent-network.org/comunidades/wp-content/uploads/2019/07/TN-comunidades-FCE-BUAP.png' alt='FCE Logo' class='logo'>");
+                        client.println("<h2>CONTROLADOR DE LUCES LED</h2>");
+                        client.println("<p>Materia: Interfaces</p>");
+                        client.println("<img src='https://i.pinimg.com/originals/e5/ca/f0/e5caf0bf71998c692248003f7eed5fb1.gif' alt='Descripción de la imagen' style='width:100px;height:auto;'>");
+                       
+                        client.println("<div class='btn-container'>");
+                        client.println("  <button class='btn btn-on' onclick=\"fetch('/H1');\">LED 1 ON</button>");
+                        client.println("  <button class='btn btn-off' onclick=\"fetch('/L1');\">LED 1 OFF</button>");
+                        client.println("</div>");
+
+                        client.println("<div style='margin: 20px 0;'>");
+                        client.println("  <input type='number' id='pwmInput' min='1' max='255' placeholder='PWM (1-255)'>");
+                        client.println("  <button id='applyBtn' onclick=\"setPWMValue()\">Aplicar Valor</button>");
+                        client.println("</div>");
+
+                        client.println("<div class='btn-container'>");
+                        client.println("  <button class='btn btn-on' onclick=\"fetch('/H2');\">LED 2 ON</button>");
+                        client.println("  <button class='btn btn-off' onclick=\"fetch('/L2');\">LED 2 OFF</button>");
+                        client.println("</div>");
+
+                        client.println("<div class='pwm-value'>Valor del Potenciometro: <span id='pwmValue'>0</span></div>");
+
+                        client.println("<div class='table-container'>");
+                        client.println("<table>");
+                        client.println("  <thead><tr><th>Alumnos</th></tr></thead>");
+                        client.println("  <tbody>");
+                        client.println("    <tr><td>Luis Abraham Rivera Ramirez</td></tr>");
+                        client.println("    <tr><td>Luis Adrian Aceves Vazquez</td></tr>");
+                        client.println("    <tr><td>David Antonio Luna Velazquez</td></tr>");
+                        client.println("    <tr><td>Bryan Esteban Rosaliano Espinoza</td></tr>");
+                        client.println("  </tbody>");
+                        client.println("</table>");
+                        client.println("</div>");
+
+                        client.println("<script>");
+                        client.println("function updatePWMValue() {");
+                        client.println("  fetch('/getPWMValue')");  
+                        client.println("    .then(response => response.text())");
+                        client.println("    .then(data => {");
+                        client.println("      document.getElementById('pwmValue').textContent = data;");
+                        client.println("    });");
+                        client.println("}");
+                        client.println("setInterval(updatePWMValue, 1000);");
+
+                        client.println("function setPWMValue() {");
+                        client.println("  let pwmVal = document.getElementById('pwmInput').value;");
+                        client.println("  if (pwmVal >= 1 && pwmVal <= 255) {");
+                        client.println("    fetch('/setPWM?value=' + pwmVal);");
+                        client.println("  } else {");
+                        client.println("    alert('Por favor ingresa un valor entre 1 y 255');");
+                        client.println("  }");
+                        client.println("}");
+                        client.println("</script>");
+
+                        client.println("</body>");
+                        client.println("</html>");
+                        client.println();
+                        break;
+                    } else {    
+                        currentLine = "";
+                    }
+                } else if (c != '\r') {  
+                    currentLine += c;     
+                }
+
+                if (currentLine.endsWith("GET /getPWMValue")) {
+                    int pwmValue = analogRead(pwmPin);
+                    client.println(pwmValue);
+                    client.println();
+                    break;
+                }
+
+                if (currentLine.startsWith("GET /setPWM?value=")) {
+                    int index = currentLine.indexOf('=') + 1;
+                    String pwmString = currentLine.substring(index);
+                    pwmString.trim();
+                    PWM_VAL = pwmString.toInt();
+                    Serial.print("PWM value set to: ");
+                    Serial.println(PWM_VAL);
+                }
+
+                if (currentLine.endsWith("GET /H1")) cobra = 1;
+                if (currentLine.endsWith("GET /L1")) cobra = 0;            
+                if (currentLine.endsWith("GET /H2")) xd = 1;
+                if (currentLine.endsWith("GET /L2")) xd = 0;              
+
+                if (cobra == 1) ledcWrite(canalPWM, PWM_VAL);
+                else if (cobra == 0) ledcWrite(canalPWM, PWM_OFF);
+                
+                if (xd == 1) ledcWrite(canalPWM2, PWM_VAL);
+                else if (xd == 0) ledcWrite(canalPWM2, PWM_OFF);
+            }
+        }
+        client.stop();
+        Serial.println("Client Disconnected.");
+    }
+}
